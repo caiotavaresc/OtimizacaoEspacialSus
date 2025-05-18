@@ -218,9 +218,9 @@ def add_medical_procedures(graph, file_medical_procedures, nrows_file):
         graph[i]["procedimentos"] = med_proc.loc[med_proc['MUNIC_MOV']==i[:6], 'PROC_REA'].tolist()
 
 """
-This function tests if a solution is feasible
+This function checks the feasibility of a solution, and returns the constraint violation number
 """
-def isFeasible(solution, num_regions, graph):
+def checkFeasibility(solution, num_regions, graph):
     
     #Test if there's an empty region
     empty_regions = list(range(num_regions))
@@ -231,7 +231,7 @@ def isFeasible(solution, num_regions, graph):
             empty_regions.remove(solution["atribuicao"][k])
         k = k+1
     if len(empty_regions) > 0:
-        return False
+        return False, len(empty_regions)
 
     NUM_UNITS = len(graph)
     i = 1
@@ -264,10 +264,17 @@ def isFeasible(solution, num_regions, graph):
         i = i + 1
         
     if((i-1) <= num_regions):
-        return True
+        return True, 0
     else:
-        return False
+        return False, (i-1-num_regions)
 
+
+"""
+This function tests if a solution is feasible
+"""
+def isFeasible(solution, num_regions, graph):
+    is_feasible, num = checkFeasibility(solution, num_regions, graph)
+    return is_feasible
 
 """
 This function computes a distance matrix between all units
@@ -329,7 +336,7 @@ def is_dominated_by(a, b, list_types):
 """
 This function mount a dominance ranking of solutions
 """
-def dominance_ranking(solutions, list_fun):
+def dominance_ranking_old(solutions, list_fun):
     
     non_ranked_solutions = list(range(len(solutions)))
     current_level = 1
@@ -355,6 +362,37 @@ def dominance_ranking(solutions, list_fun):
         
         current_level = current_level + 1
         
+    return dominance_ranking
+
+def dominance_ranking(solutions, list_fun):
+    non_ranked_solutions = list(range(len(solutions)))
+    current_level = 1
+    dominance_ranking = [0] * len(solutions)
+
+    while non_ranked_solutions:
+        current_front = []
+        
+        for i in non_ranked_solutions:
+            sol_i = solutions[i]
+            dominated = False
+
+            for j in non_ranked_solutions:
+                if i == j:
+                    continue
+                sol_j = solutions[j]
+                if is_dominated_by(sol_i, sol_j, list_fun):
+                    dominated = True
+                    break
+
+            if not dominated:
+                current_front.append(i)
+
+        for idx in current_front:
+            dominance_ranking[idx] = current_level
+            non_ranked_solutions.remove(idx)
+
+        current_level += 1
+
     return dominance_ranking
 
 """
@@ -417,3 +455,17 @@ def crowded_binary_tournament(sol_a, sol_b, sol_ranking, diversity_ranking):
         else:
             # Empate total: sorteia um dos dois
             return random.choice([sol_a, sol_b])
+        
+"""
+This function removes equal solutions from a population
+"""
+def remove_equal_solutions(population):
+    curr_ids = []
+    pop_ret = []
+    
+    for i in population:
+        if i["id"] not in curr_ids:
+            pop_ret.append(i)
+            curr_ids.append(i["id"])
+            
+    return pop_ret

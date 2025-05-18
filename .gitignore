@@ -2,3 +2,5 @@ code/__pycache__/crossover_operator.cpython-310.pyc
 code/__pycache__/initial_solutions_generator.cpython-310.pyc
 code/__pycache__/mutation_operator.cpython-310.pyc
 code/__pycache__/utils.cpython-310.pyc
+code/__pycache__/objective_functions.cpython-310.pyc
+code/__pycache__/repair_operator.cpython-310.pyc
