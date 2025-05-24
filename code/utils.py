@@ -469,3 +469,57 @@ def remove_equal_solutions(population):
             curr_ids.append(i["id"])
             
     return pop_ret
+
+"""
+This function guarantees a normal atribution without symmetric solutions
+"""
+def normalize_atribuicao(atribuicao):
+    """
+    Renomeia os grupos conforme ordem de primeira aparição.
+    Ex: [2, 2, 0, 0, 1, 1] → [0, 0, 1, 1, 2, 2]
+    """
+    mapa = {}
+    proximo_grupo = 0
+    atribuicao_normalizada = []
+
+    for g in atribuicao:
+        if g not in mapa:
+            mapa[g] = proximo_grupo
+            proximo_grupo += 1
+        atribuicao_normalizada.append(mapa[g])
+    
+    return atribuicao_normalizada
+
+"""
+This function generates an unique id from an genotype
+"""
+def generate_id(atribuicao):
+    """Gera um ID em string binária a partir da atribuição."""
+    return ''.join(str(g) for g in atribuicao)
+
+"""
+This function removes symmetric solutions from a population
+"""
+def remove_symmetric_solutions(population):
+    """
+    Remove soluções simétricas de uma população para k grupos (k ≥ 2).
+    Mantém apenas uma versão de cada particionamento, independentemente do rótulo dos grupos.
+    """
+    seen = set()
+    unique_population = []
+
+    for sol in population:
+        atrib = sol['atribuicao']
+        atrib_norm = normalize_atribuicao(atrib)
+        id_norm = generate_id(atrib_norm)
+
+        if id_norm not in seen:
+            seen.add(id_norm)
+
+            sol_normalizada = sol.copy()
+            sol_normalizada['atribuicao'] = atrib_norm
+            sol_normalizada['id'] = id_norm
+
+            unique_population.append(sol_normalizada)
+
+    return unique_population

@@ -4,9 +4,10 @@ Created on Sat May  3 22:56:47 2025
 
 @author: ctcca
 """
+import json
 import random
 from initial_solutions_generator import generate_initial_solution_random
-from utils import workWithStateData, add_medical_procedures, isFeasible, checkFeasibility, computeDistanceMatrix, dominance_ranking, calculate_crowding_distance, crowded_binary_tournament, remove_equal_solutions
+from utils import workWithStateData, add_medical_procedures, isFeasible, checkFeasibility, computeDistanceMatrix, dominance_ranking, calculate_crowding_distance, crowded_binary_tournament, remove_equal_solutions, remove_symmetric_solutions
 from crossover_operator import crossover_steiner
 from mutation_operator import mutation_steiner
 from repair_operator import repair_steiner
@@ -16,19 +17,23 @@ from objective_functions import f1_homogeneity_inhabitants, f2_variety_medical_p
 """
 GA Parameters
 """
-population_size = 300
+population_size = 1000
 mating_pool_size = population_size*2
-random_seed_min = 0.01
-random_seed_max = 0.30
 crossover_prob = 0.9
 mutation_prob_min = 0.0001
 mutation_prob_max = 0.05
-number_of_generations = 100
+number_of_generations = 10000
 elitism = True
+
+#set random seed
+random.seed(0.03)
 
 """
 GA Data
 """
+
+"""
+#Roraima state
 file_state_data = "../data/State_Roraima/Municipios_RR.xlsx"
 nrows_file_state_data = 16
 file_state_map_json = "../data/State_Roraima/RR_Municipios_2022/RR_Municipios_2022.json"
@@ -37,6 +42,24 @@ file_state_map_shapefile = "../data/State_Roraima/RR_Municipios_2022/RR_Municipi
 file_medical_procedures = "../data/State_Roraima/Procedimentos_RR.xlsx"
 nrows_file_medical_procedures = 964
 NUM_OF_REGIONS = 2
+
+max_crossover_regions = 1
+max_mutation_units = 3
+"""
+
+#Amazonas state
+file_state_data = "../data/State_Amazonas/Municipios_AM.xlsx"
+nrows_file_state_data = 63
+file_state_map_json = "../data/State_Amazonas/AM_Municipios_2022/AM_Municipios_2022.json"
+object_name = "AM_Municipios_2022"
+file_state_map_shapefile = "../data/State_Amazonas/AM_Municipios_2022/AM_Municipios_2022.shp"
+file_medical_procedures = "../data/State_Amazonas/Procedimentos_AM.xlsx"
+nrows_file_medical_procedures = 6890
+NUM_OF_REGIONS = 9
+
+max_crossover_regions = 4
+max_mutation_units = 10
+
 
 stateMap, municipalities, mun_list, stateArea, statePop, arcs = workWithStateData(file_state_data, nrows_file_state_data, file_state_map_json, object_name, file_state_map_shapefile)
 add_medical_procedures(municipalities, file_medical_procedures, nrows_file_medical_procedures)
@@ -186,7 +209,7 @@ while(gen_atu <= number_of_generations):
         pai2 = population[mating_pool.pop()]
         
         if random.random() < crossover_prob:
-            new_items = crossover_steiner(pai1, pai2, NUM_OF_REGIONS, municipalities, 1)
+            new_items = crossover_steiner(pai1, pai2, NUM_OF_REGIONS, municipalities, max_crossover_regions)
         else:
             new_items = [pai1["atribuicao"], pai2["atribuicao"]]
             
@@ -197,7 +220,7 @@ while(gen_atu <= number_of_generations):
             mutation_prob = random.uniform(mutation_prob_min, mutation_prob_max)
             
             if random.random() < mutation_prob:
-                new_item = mutation_steiner(new_item, municipalities, 3)
+                new_item = mutation_steiner(new_item, municipalities, max_mutation_units)
             
             new_item = repair_steiner(new_item, NUM_OF_REGIONS, 1, len(municipalities)-(NUM_OF_REGIONS-1), municipalities)
             
@@ -250,4 +273,20 @@ while(gen_atu <= number_of_generations):
     
 #remove equal solutions
 final_pop = remove_equal_solutions(population)
+final_pop = remove_symmetric_solutions(final_pop)
 sol_ranking = dominance_ranking(final_pop, fun_list)
+
+#Write a json file with the pareto front
+pareto_optimal_solutions = []
+for i in range(len(sol_ranking)):
+    if sol_ranking[i]==1:
+        pareto_optimal_solutions.append(final_pop[i])
+"""
+#Roraima State
+with open("reproducao_steiner_et_al_2015/_results_AG_RR.json", "w", encoding="utf-8") as f:
+    json.dump(pareto_optimal_solutions, f, indent=4, ensure_ascii=False)
+"""
+
+#Amazonas State
+with open("reproducao_steiner_et_al_2015/_results_AG_AM.json", "w", encoding="utf-8") as f:
+    json.dump(pareto_optimal_solutions, f, indent=4, ensure_ascii=False)
