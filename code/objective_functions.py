@@ -64,10 +64,12 @@ def f3_intra_regional_traveling_distance(graph, sol, num_regions, distances):
         for j in range(len(sol)):
             if sol[i] != sol[j]:
                 dist = distances[(units_list[i],units_list[j])]
-                if dist < min_dist_region[sol[i]]:
-                    min_dist_region[sol[i]] = dist
-                if dist < min_dist_region[sol[j]]:
-                    min_dist_region[sol[j]] = dist
+                comparing_i = (dist * graph[units_list[j]]["NUM_HABITANTES"])
+                comparing_j = (dist * graph[units_list[i]]["NUM_HABITANTES"])
+                if  comparing_i < min_dist_region[sol[i]]:
+                    min_dist_region[sol[i]] = comparing_i
+                if comparing_j < min_dist_region[sol[j]]:
+                    min_dist_region[sol[j]] = comparing_j
     
     sum_min_dist = 0
     for k in min_dist_region:
