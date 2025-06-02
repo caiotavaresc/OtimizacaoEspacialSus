@@ -53,7 +53,7 @@ def f2_variety_medical_procedures(graph, sol, num_regions):
     return valor_medio
 
 
-def f3_intra_regional_traveling_distance(graph, sol, num_regions, distances):
+def f3_intra_regional_traveling_distance_old(graph, sol, num_regions, distances):
     min_dist_region = {}
     units_list = list(graph.keys())
     
@@ -76,3 +76,40 @@ def f3_intra_regional_traveling_distance(graph, sol, num_regions, distances):
         sum_min_dist = sum_min_dist + min_dist_region[k]
     
     return sum_min_dist
+
+           
+def f3_intra_regional_traveling_distance(graph, sol, num_regions, distances):
+    """
+    Calcula a função objetivo f3 para minimizar a distância de viagem inter-regional.
+
+    Parâmetros:
+    - graph: dicionário onde cada chave é o código da cidade e contém "NUM_HABITANTES"
+    - sol: lista onde sol[i] é a região atribuída à cidade de índice i em list(graph.keys())
+    - num_regions: número total de regiões
+    - distances: dicionário com tuplas (cidade_i, cidade_j) como chave e distância como valor
+
+    Retorna:
+    - valor da função f3
+    """
+    city_codes = list(graph.keys())  # lista ordenada das cidades
+    f3 = 0.0
+
+    for region in range(num_regions):
+        for i, city_i in enumerate(city_codes):
+            if sol[i] != region:  # cidade i não pertence à região atual
+                hi = graph[city_i]["NUM_HABITANTES"]
+                min_distance = float('inf')
+
+                for j, city_j in enumerate(city_codes):
+                    if sol[j] == region:  # cidade j pertence à região atual
+                        # Tenta encontrar a distância (em ambas as ordens)
+                        dij = distances.get((city_i, city_j), distances.get((city_j, city_i), None))
+                        if dij is not None:
+                            weighted_distance = hi * dij
+                            if weighted_distance < min_distance:
+                                min_distance = weighted_distance
+
+                if min_distance != float('inf'):
+                    f3 += min_distance
+
+    return f3
