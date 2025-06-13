@@ -46,7 +46,7 @@ NUM_OF_REGIONS = 2
 max_crossover_regions = 1
 max_mutation_units = 3
 """
-
+"""
 #Amazonas state
 file_state_data = "../data/State_Amazonas/Municipios_AM.xlsx"
 nrows_file_state_data = 63
@@ -59,8 +59,8 @@ NUM_OF_REGIONS = 9
 
 max_crossover_regions = 4
 max_mutation_units = 10
-
 """
+
 #Rio Grande do Norte state
 file_state_data = "../data/State_RioGrandeDoNorte/Municipios_RN.xlsx"
 nrows_file_state_data = 168
@@ -73,7 +73,7 @@ NUM_OF_REGIONS = 8
 
 max_crossover_regions = 4
 max_mutation_units = 20
-"""
+
 stateMap, municipalities, mun_list, stateArea, statePop, arcs = workWithStateData(file_state_data, nrows_file_state_data, file_state_map_json, object_name, file_state_map_shapefile)
 add_medical_procedures(municipalities, file_medical_procedures, nrows_file_medical_procedures)
 distances = computeDistanceMatrix(municipalities)
@@ -299,13 +299,12 @@ for i in range(len(sol_ranking)):
 with open("reproducao_steiner_et_al_2015/_results_AG_RR.json", "w", encoding="utf-8") as f:
     json.dump(pareto_optimal_solutions, f, indent=4, ensure_ascii=False)
 """
-
+"""
 #Amazonas State
 with open("reproducao_steiner_et_al_2015/_results_AG_AM.json", "w", encoding="utf-8") as f:
     json.dump(pareto_optimal_solutions, f, indent=4, ensure_ascii=False)
-
 """
+
 #Rio Grande do Norte State
 with open("reproducao_steiner_et_al_2015/_results_AG_RN.json", "w", encoding="utf-8") as f:
     json.dump(pareto_optimal_solutions, f, indent=4, ensure_ascii=False)
-"""
